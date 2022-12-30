@@ -21,7 +21,7 @@ def chr(c: Char): Parser[Char] =
   input => {
     if (input.isEmpty) Reject("End of input.")
     else if (input.head == c) Accept(c, input.tail)
-    else Reject(s"Expected $c, got $input.")
+    else Reject(s"Expected '$c', got \"$input\".")
   }
 
 def opt[A](p: Parser[A]): Parser[Option[A]] =
