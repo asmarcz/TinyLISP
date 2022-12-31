@@ -7,8 +7,7 @@ import scala.annotation.tailrec
 
 sealed trait Instruction
 
-case class NIL() extends Instruction:
-  override def toString: String = "NIL"
+case class NIL() extends Instruction
 
 case class LDC(constant: Item) extends Instruction
 
@@ -120,6 +119,8 @@ class CompilationManager {
     lst match {
       case ::(IdentifierItem("define"), _) => compileDefine(item)
       case ::(IdentifierItem("if"), _) => compileIf(item)
+      case ::(IdentifierItem("let"), ::(names: ListItem, ::(values: ListItem, ::(body: ListItem, Nil)))) =>
+        compileLet(names, values, body)
       case ::(IdentifierItem("cons"), ::(it1: Item, ::(it2: Item, Nil))) => compileCons(ConsItem(it1, it2))
       case ::(IdentifierItem(unaryOp), ::(arg: Item, Nil)) if unaryOperators.contains(unaryOp) => compileUnary(unaryOp, arg)
       case ::(IdentifierItem("lambda"), ::(args: ListItem, ::(body: ListItem, Nil)))
@@ -133,6 +134,17 @@ class CompilationManager {
         throw IllegalArgumentException()
       }
     }
+  }
+
+  private def compileLet(names: ListItem, values: ListItem, body: ListItem): Unit = {
+    val lst = values.value
+    code.insert(NIL())
+    lst.reverse.foreach(it => {
+      compile(it)
+      code.insert(CONS())
+    })
+    compileLambda(names.value.asInstanceOf[List[IdentifierItem]], body)
+    code.insert(AP())
   }
 
   private def compileUnary(unaryOp: String, arg: Item): Unit = {
