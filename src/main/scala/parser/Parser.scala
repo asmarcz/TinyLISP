@@ -54,38 +54,21 @@ def rep1[A](p: Parser[A]): Parser[List[A]] =
 def success[A](value: A): Parser[A] =
   input => Accept(value, input)
 
-val symbols = List('+', '-', '*', '/', '<', '>')
+val symbols = List('+', '-', '*', '/', '<', '>', '=')
 
-trait Item:
-  def isCons: Boolean = false
+sealed trait Item
 
-  def isDouble: Boolean = false
+case class ConsItem(value: (Item, Item)) extends Item
 
-  def isIdentifier: Boolean = false
+case class DoubleItem(value: Double) extends Item
 
-  def isInteger: Boolean = false
+case class IdentifierItem(value: String) extends Item
 
-  def isList: Boolean = false
+case class IntItem(value: Int) extends Item
 
-  def isQuoted: Boolean = false
+case class ListItem(value: List[Item]) extends Item
 
-case class ConsItem(value: (Item, Item)) extends Item:
-  override def isCons: Boolean = true
-
-case class DoubleItem(value: Double) extends Item:
-  override def isDouble: Boolean = true
-
-case class IdentifierItem(value: String) extends Item:
-  override def isIdentifier: Boolean = true
-
-case class IntItem(value: Int) extends Item:
-  override def isInteger: Boolean = true
-
-case class ListItem(value: List[Item]) extends Item:
-  override def isList: Boolean = true
-
-case class QuotedItem(value: Item) extends Item:
-  override def isQuoted: Boolean = true
+case class QuotedItem(value: Item) extends Item
 
 def cons(): Parser[(Item, Item)] =
   input => enclosed(item() ~ whitespace(chr('.')) ~ whitespace(item()))(input) match {
