@@ -19,6 +19,16 @@ val testInput2 =
     |  (rec (+ x 1)))
     |""".stripMargin
 
+val testLambdaIfOperatorsConsDot =
+  """
+    |(define (function lamb arg)
+    |  (lamb arg))
+    |
+    |(function
+    |  (lambda (x) (if (< (car x) (* 3 2)) (+ (car x) 4) (/ (cdr x) 3)))
+    |  (6 . 4))
+    |""".stripMargin
+
 val tests = List(
   (
     testInput1,
@@ -29,6 +39,11 @@ val tests = List(
     testInput2,
     "List(ListItem(List(IdentifierItem(define), ListItem(List(IdentifierItem(rec), IdentifierItem(x))), ListItem(List(IdentifierItem(rec), ListItem(List(IdentifierItem(+), IdentifierItem(x), IntItem(1))))))))",
     "List(LDF(List(NIL(), LDC(IntItem(1)), LD((0,0)), ADD(), CONS(), LD((1,0)), AP(), RTN())), DEF())"
+  ),
+  (
+    testLambdaIfOperatorsConsDot,
+    "List(ListItem(List(IdentifierItem(define), ListItem(List(IdentifierItem(function), IdentifierItem(lamb), IdentifierItem(arg))), ListItem(List(IdentifierItem(lamb), IdentifierItem(arg))))), ListItem(List(IdentifierItem(function), ListItem(List(IdentifierItem(lambda), ListItem(List(IdentifierItem(x))), ListItem(List(IdentifierItem(if), ListItem(List(IdentifierItem(<), ListItem(List(IdentifierItem(car), IdentifierItem(x))), ListItem(List(IdentifierItem(*), IntItem(3), IntItem(2))))), ListItem(List(IdentifierItem(+), ListItem(List(IdentifierItem(car), IdentifierItem(x))), IntItem(4))), ListItem(List(IdentifierItem(/), ListItem(List(IdentifierItem(cdr), IdentifierItem(x))), IntItem(3))))))), ConsItem((IntItem(6),IntItem(4))))))",
+    "List(LDF(List(NIL(), LD((0,1)), CONS(), LD((0,0)), AP(), RTN())), DEF(), NIL(), LDC(IntItem(4)), LDC(IntItem(6)), CONS(), CONS(), LDF(List(LDC(IntItem(2)), LDC(IntItem(3)), MUL(), LD((0,0)), CAR(), LT(), SEL(List(LDC(IntItem(4)), LD((0,0)), CAR(), ADD(), JOIN()),List(LDC(IntItem(3)), LD((0,0)), CDR(), DIV(), JOIN())), RTN())), CONS(), LD((0,0)), AP())"
   )
 )
 
