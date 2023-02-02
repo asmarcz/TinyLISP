@@ -25,6 +25,8 @@ class ParserTest extends AnyFunSuite {
   }
 
   test("double") {
+    double()("123") should matchPattern { case Reject(_) => }
+    double()("1.23.45") should matchPattern { case Reject(_) => }
     item()("0.050378325") should equal(Accept(DoubleItem(0.050378325), ""))
   }
 

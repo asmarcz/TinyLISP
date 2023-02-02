@@ -71,15 +71,17 @@ case class ListItem(value: List[Item]) extends Item
 case class QuotedItem(value: Item) extends Item
 
 def cons(): Parser[(Item, Item)] =
-  input => enclosed(item() ~ whitespace(chr('.')) ~ whitespace(item()))(input) match {
-    case Accept(value, rem) => Accept((value._1._1, value._2), rem)
+  input => enclosed(
+    item() ~ forceWhitespace() ~ whitespace(chr('.')) ~ forceWhitespace() ~ whitespace(item())
+  )(input) match {
+    case Accept(value, rem) => Accept((value._1._1._1._1, value._2), rem)
     case r: Reject => r
   }
 
 def double(): Parser[Double] =
   input => {
     val (num, rem) = input.span(c => c.isDigit || c == '.')
-    if (num.nonEmpty && num.toDoubleOption.nonEmpty) Accept(num.toDouble, rem)
+    if (num.nonEmpty && num.toDoubleOption.nonEmpty && num.contains('.')) Accept(num.toDouble, rem)
     else Reject("Expected fixed point number.")
   }
 
@@ -114,10 +116,10 @@ def item(): Parser[Item] =
   input1 => {
     quoted(
       input2 => {
-        integer()(input2) match {
-          case Accept(value, rem) => Accept(IntItem(value), rem)
-          case Reject(_) => double()(input2) match {
-            case Accept(value, rem) => Accept(DoubleItem(value), rem)
+        double()(input2) match {
+          case Accept(value, rem) => Accept(DoubleItem(value), rem)
+          case Reject(_) => integer()(input2) match {
+            case Accept(value, rem) => Accept(IntItem(value), rem)
             case Reject(_) => or(identifier(), symbol().map(_.toString))(input2) match {
               case Accept(value, rem) => Accept(IdentifierItem(value), rem)
               case Reject(_) => cons()(input2) match {
@@ -169,3 +171,8 @@ def symbol(): Parser[Char] =
 
 def whitespace[A](p: Parser[A]): Parser[A] =
   input => p(input.dropWhile(c => c.isWhitespace))
+
+def forceWhitespace(): Parser[Char] =
+  input => input.head match
+    case c if c.isWhitespace => Accept(c, input.tail)
+    case _ => Reject(s"Expected whitespace, got '${input.head}' instead.")
