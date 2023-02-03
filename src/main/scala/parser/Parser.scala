@@ -68,6 +68,10 @@ case class IntItem(value: Int) extends Item
 
 case class ListItem(value: List[Item]) extends Item
 
+object ListItem {
+  def apply(items: Item*): ListItem = ListItem(items.toList)
+}
+
 case class QuotedItem(value: Item) extends Item
 
 def cons(): Parser[(Item, Item)] =
