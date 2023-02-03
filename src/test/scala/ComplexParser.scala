@@ -42,4 +42,37 @@ class ComplexParser extends FixtureAnyFunSuite {
             ListItem(IdentifierItem("my-append"), IdentifierItem("it"), ListItem(IdentifierItem("cdr"), IdentifierItem("lst"))))))
     )), ""))
   }
+
+  test("fact") { parser =>
+    parser(
+      """(define (fact n)
+        |  (if (= n 0)
+        |    1
+        |    (* n (fact (- n 1)))))""".stripMargin
+    ) should equal(Accept(List(ListItem(
+      IdentifierItem("define"), ListItem(IdentifierItem("fact"), IdentifierItem("n")),
+      ListItem(IdentifierItem("if"), ListItem(IdentifierItem("="), IdentifierItem("n"), IntItem(0)),
+        IntItem(1),
+        ListItem(IdentifierItem("*"), IdentifierItem("n"),
+          ListItem(IdentifierItem("fact"),
+            ListItem(IdentifierItem("-"), IdentifierItem("n"), IntItem(1)))))
+    )), ""))
+
+    parser(
+      """(let
+        |  (fact) ((lambda (n)
+        |    (if (= n 0)
+        |      1
+        |      (* n (fact (- n 1))))))
+        |  (fact 5))""".stripMargin
+    ) should equal(Accept(List(ListItem(
+      IdentifierItem("let"),
+      ListItem(IdentifierItem("fact")), ListItem(ListItem(IdentifierItem("lambda"), ListItem(IdentifierItem("n")),
+        ListItem(IdentifierItem("if"), ListItem(IdentifierItem("="), IdentifierItem("n"), IntItem(0)),
+          IntItem(1),
+          ListItem(IdentifierItem("*"), IdentifierItem("n"),
+            ListItem(IdentifierItem("fact"), ListItem(IdentifierItem("-"), IdentifierItem("n"), IntItem(1))))))),
+      ListItem(IdentifierItem("fact"), IntItem(5))
+    )), ""))
+  }
 }
