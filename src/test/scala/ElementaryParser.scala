@@ -8,7 +8,7 @@ import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.*
 import org.scalatest.matchers.should.Matchers.*
 
-class ParserTest extends AnyFunSuite {
+class ElementaryParser extends AnyFunSuite {
   test("nil") {
     item()("nil") should equal(Accept(IdentifierItem("nil"), ""))
   }
@@ -35,16 +35,16 @@ class ParserTest extends AnyFunSuite {
   }
 
   test("application") {
-    item()("(func x 3)") should equal(Accept(ListItem(List(
+    item()("(func x 3)") should equal(Accept(ListItem(
       IdentifierItem("func"), IdentifierItem("x"), IntItem(3)
-    )), ""))
+    ), ""))
   }
 
   test("brackets") {
     val brackets = List(('(', ')'), ('[', ']'))
     for (p <- brackets) {
-      item()(p._1 + "func x y" + p._2) should equal(Accept(ListItem(List(
-        IdentifierItem("func"), IdentifierItem("x"), IdentifierItem("y"))
+      item()(p._1 + "func x y" + p._2) should equal(Accept(ListItem(
+        IdentifierItem("func"), IdentifierItem("x"), IdentifierItem("y")
       ), ""))
     }
   }
@@ -54,4 +54,3 @@ class ParserTest extends AnyFunSuite {
     item()("'ident") should matchPattern { case Accept(QuotedItem(IdentifierItem(_)), "") => }
   }
 }
-
