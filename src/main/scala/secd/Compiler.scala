@@ -11,13 +11,25 @@ case class NIL() extends Instruction
 
 case class LDC(constant: Item) extends Instruction
 
-case class LD(coordinates: (Int, Int)) extends Instruction
+case class LD(coordinates: (Int, Int)) extends Instruction {
+  override def toString: String = s"LD[${coordinates._1}, ${coordinates._2}]"
+}
+
+object LD {
+  def apply(_1: Int, _2: Int): LD = LD((_1, _2))
+}
 
 case class SEL(b1: List[Instruction], b2: List[Instruction]) extends Instruction
 
 case class JOIN() extends Instruction
 
-case class LDF(code: List[Instruction]) extends Instruction
+case class LDF(code: List[Instruction]) extends Instruction {
+  override def toString: String = s"LDF{${code.mkString(", ")}}"
+}
+
+object LDF {
+  def apply(instructions: Instruction*): LDF = LDF(instructions.toList)
+}
 
 case class AP() extends Instruction
 
@@ -95,7 +107,7 @@ class CompilationManager {
   }
 
   private def compileCons(item: ConsItem): Unit = {
-    compileBinary(ListItem(List(IdentifierItem("cons"), item.value._1, item.value._2)))
+    compileBinary(ListItem(IdentifierItem("cons"), item.value._1, item.value._2))
   }
 
   private def compileQuote(item: Item): Unit = {
