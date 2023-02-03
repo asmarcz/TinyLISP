@@ -119,7 +119,9 @@ class CompilerTest extends FixtureAnyFunSuite {
         |  (if (null? lst)
         |    (cons it nil)
         |    (let (left) ((car lst))
-        |      (cons left (my-append it (cdr lst))))))""".stripMargin
+        |      (cons left (my-append it (cdr lst))))))
+        |
+        |(my-append 3 '(1 2))""".stripMargin
     ) should equal(List(
       LDF(NIL(), LD(0, 0), EQ(), RTN()), DEF(),
       LDF(
@@ -137,7 +139,10 @@ class CompilerTest extends FixtureAnyFunSuite {
         ),
         RTN()
       ),
-      DEF()
+      DEF(),
+      NIL(), LDC(ListItem(IntItem(1), IntItem(2))), CONS(),
+      LDC(IntItem(3)), CONS(),
+      LD(0, 1), AP()
     ))
   }
 

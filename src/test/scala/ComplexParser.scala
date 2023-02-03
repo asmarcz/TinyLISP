@@ -25,22 +25,26 @@ class ComplexParser extends FixtureAnyFunSuite {
     )), ""))
   }
 
-  test("define my-append") { parser =>
+  test("my-append") { parser =>
     parser(
       """(define (my-append it lst)
         |  (if (null? lst)
         |    (cons it nil)
         |    (let (left) ((car lst))
-        |      (cons left (my-append it (cdr lst))))))""".stripMargin
-    ) should equal(Accept(List(ListItem(
-      IdentifierItem("define"), ListItem(IdentifierItem("my-append"), IdentifierItem("it"), IdentifierItem("lst")),
-      ListItem(IdentifierItem("if"), ListItem(IdentifierItem("null?"), IdentifierItem("lst")),
-        ListItem(IdentifierItem("cons"), IdentifierItem("it"), IdentifierItem("nil")),
-        ListItem(IdentifierItem("let"), ListItem(IdentifierItem("left")),
-          ListItem(ListItem(IdentifierItem("car"), IdentifierItem("lst"))),
-          ListItem(IdentifierItem("cons"), IdentifierItem("left"),
-            ListItem(IdentifierItem("my-append"), IdentifierItem("it"), ListItem(IdentifierItem("cdr"), IdentifierItem("lst"))))))
-    )), ""))
+        |      (cons left (my-append it (cdr lst))))))
+        |
+        |(my-append 3 '(1 2))""".stripMargin
+    ) should equal(Accept(List(
+      ListItem(
+        IdentifierItem("define"), ListItem(IdentifierItem("my-append"), IdentifierItem("it"), IdentifierItem("lst")),
+        ListItem(IdentifierItem("if"), ListItem(IdentifierItem("null?"), IdentifierItem("lst")),
+          ListItem(IdentifierItem("cons"), IdentifierItem("it"), IdentifierItem("nil")),
+          ListItem(IdentifierItem("let"), ListItem(IdentifierItem("left")),
+            ListItem(ListItem(IdentifierItem("car"), IdentifierItem("lst"))),
+            ListItem(IdentifierItem("cons"), IdentifierItem("left"),
+              ListItem(IdentifierItem("my-append"), IdentifierItem("it"), ListItem(IdentifierItem("cdr"), IdentifierItem("lst"))))))),
+      ListItem(IdentifierItem("my-append"), IntItem(3), QuotedItem(ListItem(IntItem(1), IntItem(2))))
+    ), ""))
   }
 
   test("fact") { parser =>
