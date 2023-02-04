@@ -61,30 +61,30 @@ case class LT() extends Instruction
 
 case class GT() extends Instruction
 
-class Code(var instructions: List[Instruction], val parent: Option[Code]) {
-  def insert(instruction: Instruction): Unit =
-    instructions = instructions :+ instruction
-}
-
-class Env(var values: Map[String, Int], val parent: Option[Env]) {
-  def insert(key: String): Unit =
-    values = values + Tuple2(key, values.size)
-
-  @tailrec
-  private def coordinates(key: String, depth: Int): (Int, Int) = {
-    if (values.contains(key)) (depth, values(key))
-    else if (parent.nonEmpty) parent.get.coordinates(key, depth + 1)
-    else throw RuntimeException(s"Unknown identifier '$key'.")
-  }
-
-  def coordinates(key: String): (Int, Int) =
-    coordinates(key, 0)
-}
-
 val binaryOperators = List('+', '-', '*', '/', '<', '>', '=')
 val unaryOperators = List("car", "cdr")
 
 class CompilationManager {
+  private class Code(var instructions: List[Instruction], val parent: Option[Code]) {
+    def insert(instruction: Instruction): Unit =
+      instructions = instructions :+ instruction
+  }
+
+  private class Env(var values: Map[String, Int], val parent: Option[Env]) {
+    def insert(key: String): Unit =
+      values = values + Tuple2(key, values.size)
+
+    @tailrec
+    private def coordinates(key: String, depth: Int): (Int, Int) = {
+      if (values.contains(key)) (depth, values(key))
+      else if (parent.nonEmpty) parent.get.coordinates(key, depth + 1)
+      else throw RuntimeException(s"Unknown identifier '$key'.")
+    }
+
+    def coordinates(key: String): (Int, Int) =
+      coordinates(key, 0)
+  }
+
   private var code: Code = Code(List(), None)
   private var env: Env = Env(Map(), None)
 
