@@ -163,4 +163,17 @@ class CompilerTest extends FixtureAnyFunSuite {
         |  (fact 5))""".stripMargin
     ) should have message "Unknown identifier 'fact'."
   }
+
+  test("let lambda") { compile =>
+    compile(
+      """(let (lamb) ((lambda (n) (+ n 1)))
+        |  (lamb 3))""".stripMargin
+    ) should equal(List(
+      NIL(),
+      LDF(LDC(IntItem(1)), LD(0, 0), ADD(), RTN()),
+      CONS(),
+      LDF(NIL(), LDC(IntItem(3)), CONS(), LD(0, 0), AP(), RTN()),
+      AP()
+    ))
+  }
 }
