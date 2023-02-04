@@ -41,10 +41,11 @@ case class Closure(code: mutable.Stack[Instruction], env: Env)
 
 class Runtime(
   var code: mutable.Stack[Instruction] = mutable.Stack(),
-  // (stack, code, env)
-  val dump: mutable.Stack[(mutable.Stack[Element], mutable.Stack[Instruction], Env)] = mutable.Stack(),
+  var closureStack: mutable.Stack[Closure] = mutable.Stack(),
+  // (stack, closureStack, code, env)
+  val dump: mutable.Stack[(mutable.Stack[Item], mutable.Stack[Closure], mutable.Stack[Instruction], Env)] = mutable.Stack(),
   var env: Env = Env(),
-  var stack: mutable.Stack[Element] = mutable.Stack(),
+  var stack: mutable.Stack[Item] = mutable.Stack(),
   val exceptionHandler: (Exception, Env) => Unit = (exception, env) => {
     println(exception)
     println(env)
@@ -68,90 +69,90 @@ class Runtime(
     try {
       while (code.nonEmpty) {
         code.pop() match
-          case NIL() => stack push Right(NilItem())
-          case LDC(constant) => stack push Right(constant)
+          case NIL() => stack push NilItem()
+          case LDC(constant) => stack push constant
           case LD(coordinates) => ???
           case SEL(b1, b2) =>
-            stack.pop() match
-              case Left(_) => throw InternalError("Closure on top of stack when deciding SEL branch.")
-              case Right(value) =>
-                dump push ((null, code, null))
-                // dump push ((stack.clone(), code, env.clone()))
-                code = mutable.Stack.from(if (value.toBoolean) b1 else b2)
-          case JOIN() => code = dump.pop()._2
+            dump push ((null, null, code, null))
+            // dump push ((stack.clone(), closureStack.clone(), code, env.clone()))
+            code = mutable.Stack.from(if (stack.pop().toBoolean) b1 else b2)
+          case JOIN() => code = dump.pop()._3
           case LDF(code) => ???
           case AP() => ???
           case RTN() =>
             val ret = stack.pop()
             val oldState = dump.pop()
             stack = oldState._1
-            code = oldState._2
-            env = oldState._3
+            closureStack = oldState._2
+            code = oldState._3
+            env = oldState._4
             stack push ret
           case DUM() => ???
           case RAP() => ???
           case DEF() => ???
-          case CONS() =>
-            val res: Item = (stack.pop(), stack.pop()) match
-              case (Right(i1), Right(i2)) => ConsItem(i1, i2)
-              case _ => throw RuntimeException("Closure argument to CONS.")
-            stack push Right(res)
-          case CAR() => ???
-          case CDR() => ???
+          case CONS() => stack push ConsItem(stack.pop(), stack.pop())
+          case CAR() =>
+            val item: Item = stack.pop() match
+              case ConsItem(i1, _) => i1
+              case ListItem(::(i1, _)) => i1
+              case _ => throw RuntimeException("Cons cell or list expected as argument to CAR.")
+            stack push item
+          case CDR() =>
+            val item: Item = stack.pop() match
+              case ConsItem(_, i2) => i2
+              case ListItem(::(_, lst)) => ListItem(lst)
+              case _ => throw RuntimeException("Cons cell or list expected as argument to CDR.")
+            stack push item
           // TODO how to generalize
           case ADD() =>
             val res: Item = (stack.pop(), stack.pop()) match
-              case (Right(IntItem(n1)), Right(IntItem(n2))) => IntItem(n1 + n2)
-              case (Right(DoubleItem(n1)), Right(IntItem(n2))) => DoubleItem(n1 + n2)
-              case (Right(IntItem(n1)), Right(DoubleItem(n2))) => DoubleItem(n1 + n2)
-              case (Right(DoubleItem(n1)), Right(DoubleItem(n2))) => DoubleItem(n1 + n2)
+              case (IntItem(n1), IntItem(n2)) => IntItem(n1 + n2)
+              case (DoubleItem(n1), IntItem(n2)) => DoubleItem(n1 + n2)
+              case (IntItem(n1), DoubleItem(n2)) => DoubleItem(n1 + n2)
+              case (DoubleItem(n1), DoubleItem(n2)) => DoubleItem(n1 + n2)
               case _ => throw RuntimeException("Non-numerical arguments to ADD.")
-            stack push Right(res)
+            stack push res
           case SUB() =>
             val res: Item = (stack.pop(), stack.pop()) match
-              case (Right(IntItem(n1)), Right(IntItem(n2))) => IntItem(n1 - n2)
-              case (Right(DoubleItem(n1)), Right(IntItem(n2))) => DoubleItem(n1 - n2)
-              case (Right(IntItem(n1)), Right(DoubleItem(n2))) => DoubleItem(n1 - n2)
-              case (Right(DoubleItem(n1)), Right(DoubleItem(n2))) => DoubleItem(n1 - n2)
+              case (IntItem(n1), IntItem(n2)) => IntItem(n1 - n2)
+              case (DoubleItem(n1), IntItem(n2)) => DoubleItem(n1 - n2)
+              case (IntItem(n1), DoubleItem(n2)) => DoubleItem(n1 - n2)
+              case (DoubleItem(n1), DoubleItem(n2)) => DoubleItem(n1 - n2)
               case _ => throw RuntimeException("Non-numerical arguments to SUB.")
-            stack push Right(res)
+            stack push res
           case MUL() =>
             val res: Item = (stack.pop(), stack.pop()) match
-              case (Right(IntItem(n1)), Right(IntItem(n2))) => IntItem(n1 * n2)
-              case (Right(DoubleItem(n1)), Right(IntItem(n2))) => DoubleItem(n1 * n2)
-              case (Right(IntItem(n1)), Right(DoubleItem(n2))) => DoubleItem(n1 * n2)
-              case (Right(DoubleItem(n1)), Right(DoubleItem(n2))) => DoubleItem(n1 * n2)
+              case (IntItem(n1), IntItem(n2)) => IntItem(n1 * n2)
+              case (DoubleItem(n1), IntItem(n2)) => DoubleItem(n1 * n2)
+              case (IntItem(n1), DoubleItem(n2)) => DoubleItem(n1 * n2)
+              case (DoubleItem(n1), DoubleItem(n2)) => DoubleItem(n1 * n2)
               case _ => throw RuntimeException("Non-numerical arguments to MUL.")
-            stack push Right(res)
+            stack push res
           case DIV() =>
             val res: Item = (stack.pop(), stack.pop()) match
-              case (Right(IntItem(n1)), Right(IntItem(n2))) => IntItem(n1 / n2)
-              case (Right(DoubleItem(n1)), Right(IntItem(n2))) => DoubleItem(n1 / n2)
-              case (Right(IntItem(n1)), Right(DoubleItem(n2))) => DoubleItem(n1 / n2)
-              case (Right(DoubleItem(n1)), Right(DoubleItem(n2))) => DoubleItem(n1 / n2)
+              case (IntItem(n1), IntItem(n2)) => IntItem(n1 / n2)
+              case (DoubleItem(n1), IntItem(n2)) => DoubleItem(n1 / n2)
+              case (IntItem(n1), DoubleItem(n2)) => DoubleItem(n1 / n2)
+              case (DoubleItem(n1), DoubleItem(n2)) => DoubleItem(n1 / n2)
               case _ => throw RuntimeException("Non-numerical arguments to DIV.")
-            stack push Right(res)
+            stack push res
           case LT() =>
             val res: Item = (stack.pop(), stack.pop()) match
-              case (Right(IntItem(n1)), Right(IntItem(n2))) => IntItem(b2i(n1 < n2))
-              case (Right(DoubleItem(n1)), Right(IntItem(n2))) => IntItem(b2i(n1 < n2))
-              case (Right(IntItem(n1)), Right(DoubleItem(n2))) => IntItem(b2i(n1 < n2))
-              case (Right(DoubleItem(n1)), Right(DoubleItem(n2))) => IntItem(b2i(n1 < n2))
+              case (IntItem(n1), IntItem(n2)) => IntItem(b2i(n1 < n2))
+              case (DoubleItem(n1), IntItem(n2)) => IntItem(b2i(n1 < n2))
+              case (IntItem(n1), DoubleItem(n2)) => IntItem(b2i(n1 < n2))
+              case (DoubleItem(n1), DoubleItem(n2)) => IntItem(b2i(n1 < n2))
               case _ => throw RuntimeException("Non-numerical arguments to LT.")
-            stack push Right(res)
+            stack push res
           case GT() =>
             val res: Item = (stack.pop(), stack.pop()) match
-              case (Right(IntItem(n1)), Right(IntItem(n2))) => IntItem(b2i(n1 > n2))
-              case (Right(DoubleItem(n1)), Right(IntItem(n2))) => IntItem(b2i(n1 > n2))
-              case (Right(IntItem(n1)), Right(DoubleItem(n2))) => IntItem(b2i(n1 > n2))
-              case (Right(DoubleItem(n1)), Right(DoubleItem(n2))) => IntItem(b2i(n1 > n2))
+              case (IntItem(n1), IntItem(n2)) => IntItem(b2i(n1 > n2))
+              case (DoubleItem(n1), IntItem(n2)) => IntItem(b2i(n1 > n2))
+              case (IntItem(n1), DoubleItem(n2)) => IntItem(b2i(n1 > n2))
+              case (DoubleItem(n1), DoubleItem(n2)) => IntItem(b2i(n1 > n2))
               case _ => throw RuntimeException("Non-numerical arguments to GT.")
-            stack push Right(res)
-          case EQ() =>
-            val res: Item = (stack.pop(), stack.pop()) match
-              case (Right(i1), Right(i2)) => IntItem(b2i(i1 == i2))
-              case _ => throw RuntimeException("Closure argument to EQ.")
-            stack push Right(res)
+            stack push res
+          case EQ() => stack push IntItem(b2i(stack.pop() == stack.pop()))
       }
     } catch {
       case exception: Exception => exceptionHandler(exception, env)
