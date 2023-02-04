@@ -176,4 +176,16 @@ class CompilerTest extends FixtureAnyFunSuite {
       AP()
     ))
   }
+
+  test("nil") { compile =>
+    compile("nil") should equal(List(NIL()))
+  }
+
+  test("car cdr") { compile =>
+    compile("(car (cdr '(1 2 3)))") should equal(List(
+      LDC(ListItem(IntItem(1), IntItem(2), IntItem(3))),
+      CDR(),
+      CAR(),
+    ))
+  }
 }
