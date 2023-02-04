@@ -14,11 +14,18 @@ class CompilerTest extends FixtureAnyFunSuite {
   override protected def withFixture(test: OneArgTest): Outcome = {
     val codeToInstructions = (code: String) => {
       rep(whitespace(item()))(code) match
-        case Accept(value, _) => CompilationManager().compile(value)
+        case Accept(value, rem) =>
+          if (rem.forall(_.isWhitespace)) CompilationManager().compile(value)
+          else throw IllegalArgumentException(s"Unexpected input at the end: '$rem'")
         case Reject(_) => throw IllegalArgumentException()
     }
     try test(codeToInstructions)
     finally {}
+  }
+
+  test("unclosed input") { compile =>
+    the[IllegalArgumentException] thrownBy
+      compile("(foo (+ n 2)") should have message "Unexpected input at the end: '(foo (+ n 2)'"
   }
 
   test("define null?") { compile =>

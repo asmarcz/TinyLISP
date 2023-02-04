@@ -79,4 +79,8 @@ class ComplexParser extends FixtureAnyFunSuite {
       ListItem(IdentifierItem("fact"), IntItem(5))
     )), ""))
   }
+
+  test("unclosed input") { parser =>
+    parser("(foo (+ n 2)") should equal (Accept(List(),"(foo (+ n 2)"))
+  }
 }
