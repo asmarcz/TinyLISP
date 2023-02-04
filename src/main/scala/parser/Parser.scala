@@ -72,6 +72,8 @@ object ListItem {
   def apply(items: Item*): ListItem = ListItem(items.toList)
 }
 
+case class NilItem() extends Item
+
 case class QuotedItem(value: Item) extends Item
 
 def cons(): Parser[(Item, Item)] =
