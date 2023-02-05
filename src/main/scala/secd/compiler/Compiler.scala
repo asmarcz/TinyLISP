@@ -74,7 +74,7 @@ class CompilationManager {
   private def compileList(item: ListItem): Unit = {
     val lst = item.value
     lst match {
-      case ::(IdentifierItem("define"), _) => compileDefine(item)
+      case ::(IdentifierItem("define"), ::(ListItem(_), ::(_, Nil))) => compileDefine(item)
       case ::(IdentifierItem("if"), _) => compileIf(item)
       case ::(IdentifierItem("let"), ::(names: ListItem, ::(values: ListItem, ::(body: ListItem, Nil)))) =>
         compileLet(names, values, body)
@@ -141,7 +141,7 @@ class CompilationManager {
             compileLambda(l.value.tail.map({
               case i: IdentifierItem => i
               case _ => defineError()
-            }), lst(2).asInstanceOf[ListItem])
+            }), lst(2))
             code.insert(DEF())
           }
           case _ => defineError()
@@ -187,7 +187,7 @@ class CompilationManager {
     code.insert(SEL(b1, b2))
   }
 
-  private def compileLambda(args: List[IdentifierItem], body: ListItem): Unit = {
+  private def compileLambda(args: List[IdentifierItem], body: Item): Unit = {
     newCode()
     env = Env(Map(), Some(env))
     args.foreach(arg => env.insert(arg.value))
