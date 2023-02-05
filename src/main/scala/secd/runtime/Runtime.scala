@@ -73,6 +73,13 @@ class Runtime(
       case _ => List(c.value._1, c.value._2)
   }
 
+  private def isNil(i: Item): Boolean = {
+    i match
+      case NilItem() => true
+      case ListItem(value) => value.isEmpty
+      case _ => false
+  }
+
   def run(): Unit = {
     try {
       while (code.nonEmpty) {
@@ -181,6 +188,8 @@ class Runtime(
               case (DoubleItem(n1), IntItem(n2)) => IntItem(b2i(n1 == n2))
               case (IntItem(n1), DoubleItem(n2)) => IntItem(b2i(n1 == n2))
               case (DoubleItem(n1), DoubleItem(n2)) => IntItem(b2i(n1 == n2))
+              case (NilItem(), i: Item) => IntItem(b2i(isNil(i)))
+              case (i: Item, NilItem()) => IntItem(b2i(isNil(i)))
               case (i1: Item, i2: Item) => IntItem(b2i(i1 == i2))
             stack push res
       }
