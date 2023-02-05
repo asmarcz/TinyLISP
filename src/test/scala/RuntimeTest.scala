@@ -172,4 +172,13 @@ class RuntimeTest extends FixtureAnyFunSuite {
       ConsItem(IntItem(1), ConsItem(IntItem(2), ConsItem(IntItem(3), ConsItem(IntItem(4), NilItem()))))
     ))
   }
+
+  test("lambda") { run =>
+    run(
+      """(define (foo lamb)
+        |  (lamb 4 5))
+        |
+        |(foo (lambda (a b) (+ a b)))""".stripMargin
+    ) should equal(List(IntItem(9)))
+  }
 }
