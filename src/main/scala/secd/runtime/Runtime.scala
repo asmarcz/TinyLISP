@@ -1,7 +1,8 @@
 package asmar.tinylisp
 package secd
+package runtime
 
-import parser.*
+import util.*
 
 import java.lang.Double
 import scala.annotation.tailrec

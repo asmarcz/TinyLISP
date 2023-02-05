@@ -1,12 +1,14 @@
 package asmar.tinylisp
 
 import parser.*
+import secd.compiler.CompilationManager
 import secd.*
+import util.*
 
 import org.scalatest.Outcome
 import org.scalatest.funsuite.FixtureAnyFunSuite
-import org.scalatest.matchers.should.Matchers.*
 import org.scalatest.matchers.*
+import org.scalatest.matchers.should.Matchers.*
 
 class CompilerTest extends FixtureAnyFunSuite {
   override protected type FixtureParam = String => List[Instruction]

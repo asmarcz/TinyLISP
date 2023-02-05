@@ -1,6 +1,7 @@
 package asmar.tinylisp
 
 import parser.*
+import util.*
 
 import org.scalatest.Outcome
 import org.scalatest.flatspec.AnyFlatSpec

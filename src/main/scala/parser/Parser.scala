@@ -1,6 +1,8 @@
 package asmar.tinylisp
 package parser
 
+import util.*
+
 import scala.annotation.targetName
 
 // Inspired by: https://courses.fit.cvut.cz/BI-PPA/lectures/files/ppa2021-13.pdf
@@ -55,26 +57,6 @@ def success[A](value: A): Parser[A] =
   input => Accept(value, input)
 
 val symbols = List('+', '-', '*', '/', '<', '>', '=')
-
-sealed trait Item
-
-case class ConsItem(value: (Item, Item)) extends Item
-
-case class DoubleItem(value: Double) extends Item
-
-case class IdentifierItem(value: String) extends Item
-
-case class IntItem(value: Int) extends Item
-
-case class ListItem(value: List[Item]) extends Item
-
-object ListItem {
-  def apply(items: Item*): ListItem = ListItem(items.toList)
-}
-
-case class NilItem() extends Item
-
-case class QuotedItem(value: Item) extends Item
 
 def cons(): Parser[(Item, Item)] =
   input => enclosed(
