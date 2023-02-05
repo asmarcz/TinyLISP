@@ -190,4 +190,15 @@ class CompilerTest extends FixtureAnyFunSuite {
       CAR(),
     ))
   }
+
+  test("no arg define, no list as body") { compile =>
+    compile(
+      """(define (foo) 2)
+        |
+        |(foo)""".stripMargin
+    ) should equal(List(
+      LDF(LDC(IntItem(2)), RTN()), DEF(),
+      NIL(), LD(0, 0), AP()
+    ))
+  }
 }
