@@ -169,7 +169,13 @@ class Runtime(
               case (DoubleItem(n1), DoubleItem(n2)) => IntItem(b2i(n1 > n2))
               case _ => throw RuntimeException("Non-numerical arguments to GT.")
             stack push res
-          case EQ() => stack push IntItem(b2i(stack.pop() == stack.pop()))
+          case EQ() =>
+            val res: Item = (stack.pop(), stack.pop()) match
+              case (DoubleItem(n1), IntItem(n2)) => IntItem(b2i(n1 == n2))
+              case (IntItem(n1), DoubleItem(n2)) => IntItem(b2i(n1 == n2))
+              case (DoubleItem(n1), DoubleItem(n2)) => IntItem(b2i(n1 == n2))
+              case (i1: Item, i2: Item) => IntItem(b2i(i1 == i2))
+            stack push res
       }
     } catch {
       case exception: Exception => exceptionHandler(exception, env)
