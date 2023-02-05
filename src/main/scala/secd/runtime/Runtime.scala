@@ -108,7 +108,9 @@ class Runtime(
           case DUM() => ???
           case RAP() => ???
           case DEF() => stack.pop() match
-            case closure: Closure => env.insert(closure)
+            case closure: Closure =>
+              closure.env.insert(closure)
+              env.insert(closure)
             case _ => throw RuntimeException("Closure required on stack before calling DEF.")
           case CONS() => stack push ConsItem(stack.pop(), stack.pop())
           case CAR() =>
