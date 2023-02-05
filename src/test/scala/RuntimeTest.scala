@@ -56,4 +56,48 @@ class RuntimeTest extends FixtureAnyFunSuite {
     run("(= 1 2) (= 2 1) (= 2 2)") should equal(List(IntItem(0), IntItem(0), IntItem(1)))
     run("(= 1. 2) (= 2. 1) (= 2. 2)") should equal(List(IntItem(0), IntItem(0), IntItem(1)))
   }
+
+  test("list and cons operations") { run =>
+    run("(cons 1 2)") should equal(List(ConsItem(IntItem(1), IntItem(2))))
+    run("(1 . 2)") should equal(List(ConsItem(IntItem(1), IntItem(2))))
+
+    run(
+      """(define (cadr lst)
+        |  (car (cdr lst)))
+        |
+        |(define (cddr lst)
+        |  (cdr (cdr lst)))
+        |
+        |(car '(1 2))
+        |(cdr '(1 2))
+        |(cadr '(1 2))
+        |
+        |(car (1 . 2))
+        |(cdr (1 . 2))
+        |
+        |(car '(1 2 3))
+        |(cdr '(1 2 3))
+        |(cadr '(1 2 3))
+        |
+        |(car (1 . (2 . 3)))
+        |(cdr '(1 . (2 . 3)))
+        |(cadr '(1 . (2 . 3)))
+        |
+        |(cddr '(1 2))
+        |(cddr (1 . (2 . nil)))""".stripMargin
+    ) should equal(List(
+      IntItem(1), ListItem(IntItem(2)), IntItem(2),
+      IntItem(1), IntItem(2),
+      IntItem(1), ListItem(IntItem(2), IntItem(3)), IntItem(2),
+      IntItem(1), ConsItem(IntItem(2), IntItem(3)), IntItem(2),
+      NilItem(),
+      NilItem()
+    ))
+
+    the[RuntimeException] thrownBy
+      run("(cdr (cdr '(1)))") should have message "Cons cell or list expected as argument to CDR."
+
+    the[RuntimeException] thrownBy
+      run("(cdr (cdr (1 . nil)))") should have message "Cons cell or list expected as argument to CDR."
+  }
 }
