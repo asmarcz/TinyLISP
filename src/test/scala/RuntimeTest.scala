@@ -112,4 +112,30 @@ class RuntimeTest extends FixtureAnyFunSuite {
         |(branch 7)""".stripMargin
     ) should equal(List(IntItem(6), DoubleItem(3.5)))
   }
+
+  test("fact") { run =>
+    run(
+      """(define (fact n)
+        |  (if (= n 0)
+        |    1
+        |    (* n (fact (- n 1)))))
+        |
+        |(define (for-rec i n fun)
+        |  (if (= i n)
+        |    (fun i)
+        |    (cons (fun i) (for-rec (+ i 1) n fun))))
+        |
+        |(define (for n fun)
+        |  (for-rec 0 n fun))
+        |
+        |(for 5 fact)""".stripMargin
+    ) should equal(List(
+      ConsItem(IntItem(1),
+        ConsItem(IntItem(1),
+          ConsItem(IntItem(2),
+            ConsItem(IntItem(6),
+              ConsItem(IntItem(24),
+                IntItem(120))))))
+    ))
+  }
 }
