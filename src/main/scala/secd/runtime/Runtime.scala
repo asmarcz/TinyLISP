@@ -9,25 +9,23 @@ import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.collection.mutable.*
 
-type Element = Either[Closure, Item]
-
-class Env(private val values: ListBuffer[Element] = ListBuffer.empty, val parent: Option[Env] = None) {
+class Env(private val values: ListBuffer[Item] = ListBuffer.empty, val parent: Option[Env] = None) {
   @tailrec
-  final def get(index: Int, depth: Int = 0): Element = {
+  final def get(index: Int, depth: Int = 0): Item = {
     if (depth == 0) values(index)
     else parent match
       case Some(p) => p.get(index, depth - 1)
       case None => throw InternalError("Trying to access a non-occupied coordinate.")
   }
 
-  def get(coordinates: (Int, Int)): Element = get(coordinates._2, coordinates._1)
+  def get(coordinates: (Int, Int)): Item = get(coordinates._2, coordinates._1)
 
-  def insert(el: Element): Int = {
+  def insert(el: Item): Int = {
     values += el
     values.size - 1
   }
 
-  def _getValues: ListBuffer[Element] = values
+  def _getValues: ListBuffer[Item] = values
 
   override def clone(): Env = Env(values.clone(), parent.map(_.clone()))
 
@@ -38,13 +36,12 @@ class Env(private val values: ListBuffer[Element] = ListBuffer.empty, val parent
   }
 }
 
-case class Closure(code: mutable.Stack[Instruction], env: Env)
+case class Closure(code: mutable.Stack[Instruction], env: Env) extends Item
 
 class Runtime(
   var code: mutable.Stack[Instruction] = mutable.Stack(),
-  var closureStack: mutable.Stack[Closure] = mutable.Stack(),
-  // (stack, closureStack, code, env)
-  val dump: mutable.Stack[(mutable.Stack[Item], mutable.Stack[Closure], mutable.Stack[Instruction], Env)] = mutable.Stack(),
+  // (stack, code, env)
+  val dump: mutable.Stack[(mutable.Stack[Item], mutable.Stack[Instruction], Env)] = mutable.Stack(),
   var env: Env = Env(),
   var stack: mutable.Stack[Item] = mutable.Stack(),
   val exceptionHandler: (Exception, Env) => Unit = (exception, env) => {
@@ -72,10 +69,10 @@ class Runtime(
         code.pop() match
           case NIL() => stack push NilItem()
           case LDC(constant) => stack push constant
-          case LD(coordinates) => ???
+          case LD(coordinates) => stack push (env get coordinates)
           case SEL(b1, b2) =>
-            dump push ((null, null, code, null))
-            // dump push ((stack.clone(), closureStack.clone(), code, env.clone()))
+            dump push ((null, code, null))
+            // dump push ((stack.clone(), code, env.clone()))
             code = mutable.Stack.from(if (stack.pop().toBoolean) b1 else b2)
           case JOIN() => code = dump.pop()._3
           case LDF(code) => ???
@@ -84,9 +81,8 @@ class Runtime(
             val ret = stack.pop()
             val oldState = dump.pop()
             stack = oldState._1
-            closureStack = oldState._2
-            code = oldState._3
-            env = oldState._4
+            code = oldState._2
+            env = oldState._3
             stack push ret
           case DUM() => ???
           case RAP() => ???
