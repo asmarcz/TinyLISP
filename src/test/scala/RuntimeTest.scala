@@ -138,4 +138,17 @@ class RuntimeTest extends FixtureAnyFunSuite {
                 IntItem(120))))))
     ))
   }
+
+  test("fibonacci") { run =>
+    run(
+      """(define (fibonacci n)
+        |  (if (= n 0)
+        |    0
+        |    [if (= n 1)
+        |      1
+        |      (+ (fibonacci (- n 1)) (fibonacci (- n 2)))]))
+        |
+        |(fibonacci 5)""".stripMargin
+    ) should equal(List(IntItem(5)))
+  }
 }
