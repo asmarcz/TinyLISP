@@ -175,4 +175,6 @@ class Runtime(
       case exception: Exception => exceptionHandler(exception, env)
     }
   }
+
+  def getResult: List[Item] = List.from(stack.reverseIterator)
 }
