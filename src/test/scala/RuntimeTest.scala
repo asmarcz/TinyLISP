@@ -151,4 +151,25 @@ class RuntimeTest extends FixtureAnyFunSuite {
         |(fibonacci 5)""".stripMargin
     ) should equal(List(IntItem(5)))
   }
+
+  test("my-append") { run =>
+    run(
+      """(define (null? x)
+        |  (= x nil))
+        |
+        |(define (my-append it lst)
+        |  (if (null? lst)
+        |    (cons it nil)
+        |    (let (left) ((car lst))
+        |      (cons left (my-append it (cdr lst))))))
+        |
+        |(my-append 1 '())
+        |(my-append 5 '(1 2 3 4))
+        |(my-append 4 (1 . (2 . (3 . nil))))""".stripMargin
+    ) should equal(List(
+      ConsItem(IntItem(1), NilItem()),
+      ConsItem(IntItem(1), ConsItem(IntItem(2), ConsItem(IntItem(3), ConsItem(IntItem(4), ConsItem(IntItem(5), NilItem()))))),
+      ConsItem(IntItem(1), ConsItem(IntItem(2), ConsItem(IntItem(3), ConsItem(IntItem(4), NilItem()))))
+    ))
+  }
 }
