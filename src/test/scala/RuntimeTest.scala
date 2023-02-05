@@ -100,4 +100,16 @@ class RuntimeTest extends FixtureAnyFunSuite {
     the[RuntimeException] thrownBy
       run("(cdr (cdr (1 . nil)))") should have message "Cons cell or list expected as argument to CDR."
   }
+
+  test("branching") { run =>
+    run(
+      """(define (branch a)
+        |  (if (< a 5)
+        |    (* 2 a)
+        |    (/ a 2.0)))
+        |
+        |(branch 3)
+        |(branch 7)""".stripMargin
+    ) should equal(List(IntItem(6), DoubleItem(3.5)))
+  }
 }
