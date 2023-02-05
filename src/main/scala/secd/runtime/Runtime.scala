@@ -117,7 +117,9 @@ class Runtime(
           case CDR() =>
             val item: Item = stack.pop() match
               case ConsItem(_, i2) => i2
-              case ListItem(::(_, lst)) => ListItem(lst)
+              case ListItem(::(_, lst)) => lst match
+                case Nil => NilItem()
+                case _ => ListItem(lst)
               case _ => throw RuntimeException("Cons cell or list expected as argument to CDR.")
             stack push item
           // TODO how to generalize
