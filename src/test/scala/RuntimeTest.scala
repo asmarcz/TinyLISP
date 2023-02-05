@@ -2,7 +2,7 @@ package asmar.tinylisp
 
 import parser.*
 import secd.compiler.CompilationManager
-import secd.runtime.Runtime
+import secd.runtime.{Env, Runtime}
 import util.*
 
 import org.scalatest.Outcome
@@ -21,7 +21,10 @@ class RuntimeTest extends FixtureAnyFunSuite {
         case Accept(value, rem) =>
           if (rem.forall(_.isWhitespace)) {
             val instructions = CompilationManager().compile(value)
-            val runtime = Runtime(mutable.Stack.from(instructions))
+            val runtime = Runtime(
+              mutable.Stack.from(instructions),
+              exceptionHandler = (ex: Exception, _) => throw ex
+            )
             runtime.run()
             runtime.getResult
           }
