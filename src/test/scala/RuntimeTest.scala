@@ -41,6 +41,8 @@ class RuntimeTest extends FixtureAnyFunSuite {
 
     run("(* (+ 1 2) (/ 5. 2))") should equal(List(DoubleItem(7.5)))
     run("(* (+ 1 2) (/ 5 2))") should equal(List(IntItem(6)))
+
+    run("(- 5.7 2)") should equal(List(DoubleItem(3.7)))
   }
 
   test("logical operators") { run =>
