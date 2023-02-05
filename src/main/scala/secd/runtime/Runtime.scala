@@ -63,6 +63,13 @@ class Runtime(
 
   private def b2i(b: Boolean): Int = if (b) 1 else 0
 
+  private def cons2List(c: ConsItem): List[Item] = {
+    c.value match
+      case (_, NilItem()) => List(c.value._1)
+      case (_, c2: ConsItem) => ::(c.value._1, cons2List(c2))
+      case _ => List(c.value._1, c.value._2)
+  }
+
   def run(): Unit = {
     try {
       while (code.nonEmpty) {
@@ -74,9 +81,20 @@ class Runtime(
             dump push ((null, code, null))
             // dump push ((stack.clone(), code, env.clone()))
             code = mutable.Stack.from(if (stack.pop().toBoolean) b1 else b2)
-          case JOIN() => code = dump.pop()._3
-          case LDF(code) => ???
-          case AP() => ???
+          case JOIN() => code = dump.pop()._2
+          case LDF(code) => stack push Closure(mutable.Stack.from(code), env.clone())
+          case AP() =>
+            dump push ((stack, code, env))
+            (stack.pop(), stack.pop()) match
+              // case p: (Closure, ConsItem) => {} cannot be checked at runtime, why?
+              case (closure: Closure, NilItem()) =>
+                code = mutable.Stack.from(closure.code)
+                env = Env(parent = Some(closure.env))
+              case (closure: Closure, args: ConsItem) =>
+                code = mutable.Stack.from(closure.code)
+                env = Env(ListBuffer.from(cons2List(args)), Some(closure.env))
+              case _ => throw RuntimeException("Closure and Cons required on stack before calling AP.")
+            stack = mutable.Stack()
           case RTN() =>
             val ret = stack.pop()
             val oldState = dump.pop()
@@ -86,7 +104,9 @@ class Runtime(
             stack push ret
           case DUM() => ???
           case RAP() => ???
-          case DEF() => ???
+          case DEF() => stack.pop() match
+            case closure: Closure => env.insert(closure)
+            case _ => throw RuntimeException("Closure required on stack before calling DEF.")
           case CONS() => stack push ConsItem(stack.pop(), stack.pop())
           case CAR() =>
             val item: Item = stack.pop() match
