@@ -12,7 +12,10 @@ import scala.collection.mutable.*
 class Env(private val values: ListBuffer[Item] = ListBuffer.empty, val parent: Option[Env] = None) {
   @tailrec
   final def get(index: Int, depth: Int = 0): Item = {
-    if (depth == 0) values(index)
+    if (depth == 0)
+      if (index >= values.size)
+        throw InternalError("Trying to access a non-occupied coordinate.")
+      values(index)
     else parent match
       case Some(p) => p.get(index, depth - 1)
       case None => throw InternalError("Trying to access a non-occupied coordinate.")
