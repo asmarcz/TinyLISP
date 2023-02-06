@@ -39,7 +39,9 @@ class Env(private val values: ListBuffer[Item] = ListBuffer.empty, val parent: O
   }
 }
 
-case class Closure(code: mutable.Stack[Instruction], env: Env) extends Item
+case class Closure(code: mutable.Stack[Instruction], env: Env) extends Item {
+  override def toString: String = s"Closure#${hashCode()}($code, Env#${env.hashCode()})"
+}
 
 class Runtime(
   var code: mutable.Stack[Instruction] = mutable.Stack(),
