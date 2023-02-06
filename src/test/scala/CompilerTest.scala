@@ -214,4 +214,41 @@ class CompilerTest extends FixtureAnyFunSuite {
       DEF()
     ))
   }
+
+  test("call returned closure") { compile =>
+    (the[RuntimeException] thrownBy compile("((fun))")).getMessage should
+      startWith("Unknown identifier")
+
+    compile(
+      """(define (lambda-gen)
+        |  (lambda () 1))
+        |
+        |((lambda-gen))""".stripMargin
+    ) should equal(List(
+      LDF(
+        LDF(LDC(IntItem(1)), RTN()),
+        RTN()
+      ),
+      DEF(),
+      NIL(), NIL(), LD(0, 0), AP(), AP()
+    ))
+
+    compile(
+      """(define (lambda-gen)
+        |  (lambda ()
+        |    (lambda () 1)))
+        |
+        |(((lambda-gen)))""".stripMargin
+    ) should equal(List(
+      LDF(
+        LDF(
+          LDF(LDC(IntItem(1)), RTN()),
+          RTN()
+        ),
+        RTN()
+      ),
+      DEF(),
+      NIL(), NIL(), NIL(), LD(0, 0), AP(), AP(), AP()
+    ))
+  }
 }

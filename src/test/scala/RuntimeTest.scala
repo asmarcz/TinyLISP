@@ -2,7 +2,7 @@ package asmar.tinylisp
 
 import parser.*
 import secd.compiler.CompilationManager
-import secd.runtime.{Env, Runtime}
+import secd.runtime.{Closure, Env, Runtime}
 import util.*
 
 import org.scalatest.Outcome
@@ -180,5 +180,26 @@ class RuntimeTest extends FixtureAnyFunSuite {
         |
         |(foo (lambda (a b) (+ a b)))""".stripMargin
     ) should equal(List(IntItem(9)))
+
+    run(
+      """(define (lambda-gen)
+        |  (lambda (n) n))
+        |
+        |(lambda-gen)
+        |((lambda-gen) 3)""".stripMargin
+    ) should matchPattern {
+      case List(
+      Closure(mutable.Stack(LD(0, 0), RTN()), _),
+      IntItem(3)
+      ) =>
+    }
+
+    run(
+      """(define (lambda-gen)
+        |  (lambda ()
+        |    (lambda () 1)))
+        |
+        |(((lambda-gen)))""".stripMargin
+    ) should equal(List(IntItem(1)))
   }
 }
