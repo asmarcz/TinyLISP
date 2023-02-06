@@ -201,4 +201,17 @@ class CompilerTest extends FixtureAnyFunSuite {
       NIL(), LD(0, 0), AP()
     ))
   }
+
+  test("return lambda") { compile =>
+    compile(
+      """(define (lambda-gen)
+        |  (lambda (n) n))""".stripMargin
+    ) should equal(List(
+      LDF(
+        LDF(LD(0, 0), RTN()),
+        RTN(),
+      ),
+      DEF()
+    ))
+  }
 }
