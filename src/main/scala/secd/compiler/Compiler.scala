@@ -86,6 +86,7 @@ class CompilationManager {
       case ::(IdentifierItem(binOp), _) if binOp.length == 1 && binaryOperators.contains(binOp.head) && lst.length == 3 =>
         compileBinary(item)
       case ::(_: IdentifierItem, _) => compileCall(item)
+      case ::(_: ListItem, _) => compileCall(item)
       case _ => {
         Console.err.println(s"Expected identifier at the start of the list, got $lst instead.")
         throw IllegalArgumentException()
