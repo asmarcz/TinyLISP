@@ -2,6 +2,18 @@
 
 Build using Intellij Idea Scala plugin or sbt from the command line.
 
+### Building a Fat JAR
+Running
+```shell
+sbt assembly
+```
+will produce a Fat JAR. See output for destination directory.
+
+Run an example:
+```shell
+java -jar TinyLISP-assembly-0.1.0-SNAPSHOT.jar ../../examples/factorial.lsp
+```
+
 ### API Usage
 
 ```scala
