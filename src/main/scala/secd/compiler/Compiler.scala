@@ -80,7 +80,7 @@ class CompilationManager {
         compileLet(names, values, body)
       case ::(IdentifierItem("cons"), ::(it1: Item, ::(it2: Item, Nil))) => compileCons(ConsItem(it1, it2))
       case ::(IdentifierItem(unaryOp), ::(arg: Item, Nil)) if unaryOperators.contains(unaryOp) => compileUnary(unaryOp, arg)
-      case ::(IdentifierItem("lambda"), ::(args: ListItem, ::(body: ListItem, Nil)))
+      case ::(IdentifierItem("lambda"), ::(args: ListItem, ::(body: Item, Nil)))
         if args.value.forall(_.isInstanceOf[IdentifierItem]) =>
         compileLambda(args.value.asInstanceOf[List[IdentifierItem]], body)
       case ::(IdentifierItem(binOp), _) if binOp.length == 1 && binaryOperators.contains(binOp.head) && lst.length == 3 =>
